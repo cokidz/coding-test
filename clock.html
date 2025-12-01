@@ -1,248 +1,144 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>드래그 가능한 아날로그 시계 (All-in-One)</title>
-    
-    <style>
-        :root {
-            --clock-size: 300px; /* 시계 크기 */
-            --center-offset: calc(var(--clock-size) / 2); /* 중심으로부터의 거리 */
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e0f7fa; /* 연한 하늘색 배경 */
-            color: #004d40;
-        }
-
-        .digital-display {
-            margin-bottom: 25px;
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #00796b;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .clock-face {
-            position: relative;
-            width: var(--clock-size);
-            height: var(--clock-size);
-            border: 15px solid #009688; /* 청록색 테두리 */
-            border-radius: 50%;
-            background-color: #ffffff;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .center-dot {
-            position: absolute;
-            top: var(--center-offset);
-            left: var(--center-offset);
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            background-color: #ff5722; /* 주황색 중심점 */
-            border-radius: 50%;
-            z-index: 10;
-        }
-
-        /* 시계 바늘 공통 스타일 */
-        .hand {
-            position: absolute;
-            bottom: var(--center-offset);
-            left: var(--center-offset);
-            transform-origin: bottom center; 
-            border-radius: 5px;
-            z-index: 5;
-            transition: transform 0.1s linear; /* 부드러운 움직임 */
-        }
-
-        .hour {
-            width: 8px;
-            height: calc(var(--center-offset) * 0.5); 
-            background-color: #333;
-            transform: translate(-50%, 0) rotate(0deg); 
-        }
-
-        .minute {
-            width: 6px;
-            height: calc(var(--center-offset) * 0.8); 
-            background-color: #00796b; /* 분침색 */
-            cursor: grab; /* 드래그 가능 커서 */
-            transform: translate(-50%, 0) rotate(0deg);
-        }
-        
-        /* 12개의 시간 숫자 마크 스타일 */
-        .number-mark {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            font-weight: bold;
-            font-size: 1.4em;
-            text-align: center;
-            line-height: 30px;
-            color: #333;
-            /* 중심을 기준으로 회전하고, 바깥쪽으로 이동시킨 후, 텍스트를 바로 세우기 위해 역회전 */
-            transform: rotate(calc(var(--num) * 30deg)) translate(0, calc(-1 * var(--center-offset) + 25px)) rotate(calc(var(--num) * -30deg));
-            top: var(--center-offset);
-            left: var(--center-offset);
-            transform-origin: 0 0;
-            z-index: 1;
-        }
-    </style>
-    </head>
+<meta charset="UTF-8">
+<title>완전 부드러운 시계 놀이</title>
+<style>
+  body {
+    font-family: "맑은 고딕", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
+  }
+  h1 { font-size: 2.6em; margin-bottom: 10px; color: #2c3e50; }
+  #timeText {
+    font-size: 3.3em;
+    font-weight: bold;
+    margin: 25px 0;
+    color: #e74c3c;
+  }
+  .clock {
+    position: relative;
+    width: 420px;
+    height: 420px;
+    border: 24px solid #3498db;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .center { position: absolute; top: 50%; left: 50%; width: 36px; height: 36px; background: #2c3e50; border-radius: 50%; transform: translate(-50%,-50%); z-index: 10; }
+  .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center; }
+  .hour   { width: 16px; height: 140px; background: #2c3e50; border-radius: 10px; margin-left: -8px; }
+  .minute { width: 10px; height: 190px; background: #e74c3c; border-radius: 6px; margin-left: -5px; cursor: grab; }
+  .minute:active { cursor: grabbing; }
+  .number {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 60px; height: 60px;
+    margin: -30px 0 0 -30px;
+    font-size: 42px; font-weight: bold; color: #2c3e50;
+    text-align: center; line-height: 60px;
+  }
+</style>
+</head>
 <body>
-    <div class="clock-container">
-        <div id="digital-time" class="digital-display">--:-- --</div>
-        
-        <div class="clock-face">
-            <div class="number-mark" style="--num: 1">1</div>
-            <div class="number-mark" style="--num: 2">2</div>
-            <div class="number-mark" style="--num: 3">3</div>
-            <div class="number-mark" style="--num: 4">4</div>
-            <div class="number-mark" style="--num: 5">5</div>
-            <div class="number-mark" style="--num: 6">6</div>
-            <div class="number-mark" style="--num: 7">7</div>
-            <div class="number-mark" style="--num: 8">8</div>
-            <div class="number-mark" style="--num: 9">9</div>
-            <div class="number-mark" style="--num: 10">10</div>
-            <div class="number-mark" style="--num: 11">11</div>
-            <div class="number-mark" style="--num: 12">12</div>
 
-            <div class="hand hour" id="hour-hand"></div>
-            <div class="hand minute" id="minute-hand"></div>
+<h1>분침을 쭉쭉 돌려봐!</h1>
+<div id="timeText">오전 12시 00분</div>
 
-            <div class="center-dot"></div>
-        </div>
-    </div>
+<div class="clock">
+  <div class="center"></div>
+  <div id="hourHand" class="hand hour"></div>
+  <div id="minuteHand" class="hand minute"></div>
 
-    <script>
-        const hourHand = document.getElementById('hour-hand');
-        const minuteHand = document.getElementById('minute-hand');
-        const digitalTimeDisplay = document.getElementById('digital-time');
-        const clockFace = document.querySelector('.clock-face');
+  <div class="number" style="transform: translateY(-180px)">12</div>
+  <div class="number" style="transform: rotate(30deg)  translateY(-180px) rotate(-30deg)">1</div>
+  <div class="number" style="transform: rotate(60deg)  translateY(-180px) rotate(-60deg)">2</div>
+  <div class="number" style="transform: rotate(90deg)  translateY(-180px) rotate(-90deg)">3</div>
+  <div class="number" style="transform: rotate(120deg) translateY(-180px) rotate(-120deg)">4</div>
+  <div class="number" style="transform: rotate(150deg) translateY(-180px) rotate(-150deg)">5</div>
+  <div class="number" style="transform: rotate(180deg) translateY(-180px) rotate(-180deg)">6</div>
+  <div class="number" style="transform: rotate(210deg) translateY(-180px) rotate(-210deg)">7</div>
+  <div class="number" style="transform: rotate(240deg) translateY(-180px) rotate(-240deg)">8</div>
+  <div class="number" style="transform: rotate(270deg) translateY(-180px) rotate(-270deg)">9</div>
+  <div class="number" style="transform: rotate(300deg) translateY(-180px) rotate(-300deg)">10</div>
+  <div class="number" style="transform: rotate(330deg) translateY(-180px) rotate(-330deg)">11</div>
+</div>
 
-        let centerX = 0;
-        let centerY = 0;
-        let isDragging = false; 
+<script>
+// 핵심: totalMinutes만 정확히 누적시키면 시침·분침·텍스트 모두 완벽해진다!
+let totalMinutes = 0;
 
-        /**
-         * 시계 바늘과 디지털 시간을 업데이트합니다.
-         * @param {number} h - 시간 (0-23)
-         * @param {number} m - 분 (0-59)
-         * @param {number} s - 초 (0-59)
-         */
-        function updateClock(h, m, s) {
-            // 시침 각도 계산: (시 % 12 * 30도) + (분 / 60 * 30도)
-            const hourDeg = (h % 12) * 30 + (m / 60) * 30;
-            // 분침 각도 계산: 분 * 6도
-            const minuteDeg = m * 6;
-            
-            hourHand.style.transform = `translate(-50%, 0) rotate(${hourDeg}deg)`;
-            minuteHand.style.transform = `translate(-50%, 0) rotate(${minuteDeg}deg)`;
+const minuteHand = document.getElementById('minuteHand');
+const hourHand   = document.getElementById('hourHand');
+const timeText   = document.getElementById('timeText');
 
-            // 디지털 시간 표시 (오전/오후 포함)
-            const ampm = h >= 12 ? '오후' : '오전';
-            const displayHour = h % 12 === 0 ? 12 : h % 12; // 0시는 12시, 12시는 12시로 표시
-            const paddedMinute = String(m).padStart(2, '0');
-            
-            digitalTimeDisplay.textContent = `${ampm} ${displayHour}시 ${paddedMinute}분`;
-        }
+function updateClock() {
+  const mins  = totalMinutes % 60;
+  const hours = Math.floor(totalMinutes / 60);
 
-        // ----------------------------------------------------
-        // 현재 시스템 시간으로 시계를 초기화하고, 매초 업데이트
-        // ----------------------------------------------------
-        function startClock() {
-            const now = new Date();
-            const h = now.getHours();
-            const m = now.getMinutes();
-            const s = now.getSeconds();
+  // 분침: 6도 × 분
+  minuteHand.style.transform = `rotate(${mins * 6}deg)`;
 
-            // 초 단위까지 반영하여 부드러운 움직임을 만듭니다.
-            const totalMinutes = m + s / 60;
-            const totalHours = h + totalMinutes / 60;
+  // 시침: 0.5도 × 전체 분 (30도 × 시 + 0.5도 × 분)
+  hourHand.style.transform   = `rotate(${totalMinutes * 0.5}deg)`;
 
-            updateClock(h, m, s);
-        }
+  // 텍스트
+  let h12 = hours % 12;
+  if (h12 === 0) h12 = 12;
+  const ampm = hours % 24 < 12 ? "오전" : "오후";
+  timeText.textContent = `${ampm} ${h12}시 ${String(mins).padStart(2,'0')}분`;
+}
 
-        // 1초마다 시계를 업데이트합니다.
-        setInterval(startClock, 1000); 
-        startClock(); // 페이지 로드 시 즉시 실행
+// 마우스/터치로 분침 드래그 → totalMinutes만 바꿔주면 끝!
+let isDragging = false;
 
-        // ----------------------------------------------------
-        // 분침 드래그 기능 구현
-        // ----------------------------------------------------
+function handleMove(e) {
+  if (!isDragging) return;
+  e.preventDefault();
 
-        // 드래그 시작 이벤트 핸들러
-        minuteHand.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            // 드래그 중에는 CSS 애니메이션 비활성화
-            minuteHand.style.transition = 'none'; 
-            
-            // 시계 중심점의 절대 위치 계산
-            const rect = clockFace.getBoundingClientRect();
-            centerX = rect.left + rect.width / 2;
-            centerY = rect.top + rect.height / 2;
-            
-            e.preventDefault(); 
-            minuteHand.style.cursor = 'grabbing'; 
-        });
+  const clock = document.querySelector('.clock');
+  const rect = clock.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - cx;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - cy;
 
-        // 드래그 중 이벤트 핸들러
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
+  let angle = Math.atan2(y, x) * 180 / Math.PI + 90;
+  if (angle < 0) angle += 360;
 
-            // 마우스 위치와 시계 중심 사이의 상대 좌표
-            const dx = e.clientX - centerX;
-            const dy = e.clientY - centerY;
-            
-            // Math.atan2로 라디안 각도 계산. (y축이 위쪽(12시)을 향하도록 90도 회전)
-            let angleRad = Math.atan2(dy, dx);
-            let angleDeg = angleRad * (180 / Math.PI) + 90; 
+  // 1분 단위 스냅 (부드럽지만 딸깍 느낌 있음)
+  const newMinuteInCircle = Math.round(angle / 6) * 6 / 6; // 0~59
 
-            // 각도를 0-360도 범위로 조정
-            if (angleDeg < 0) {
-                angleDeg += 360;
-            }
+  // 핵심! 이전 위치와 비교해서 차이만큼만 더해줌 → 점프 절대 없음
+  const prevMinuteInCircle = totalMinutes % 60;
+  let diff = newMinuteInCircle - prevMinuteInCircle;
 
-            // 각도를 분(Minute)으로 변환: 1분 = 6도
-            // 가장 가까운 6도(1분) 단위로 반올림하여 분침의 위치를 제한합니다.
-            let totalDegrees = Math.round(angleDeg / 6) * 6;
-            
-            // 분 계산: (각도 / 6)
-            const newMinute = (totalDegrees / 6) % 60; 
+  // 마우스가 시계 반대 방향으로 크게 넘어가면 +60 처리 (연속 회전 보정)
+  if (diff < -30) diff += 60;
+  if (diff >  30) diff -= 60;
 
-            // 현재 시간에서 분침만 드래그된 분으로 바꿉니다.
-            const now = new Date();
-            const currentHour = now.getHours();
-            
-            // 시침 각도 계산을 위해 시계 업데이트
-            // 시침이 분침에 따라 함께 움직여야 자연스럽습니다.
-            updateClock(currentHour, newMinute, 0); 
-            
-            // 분침은 정확히 드래그된 각도로 설정
-            minuteHand.style.transform = `translate(-50%, 0) rotate(${totalDegrees}deg)`;
-        });
+  totalMinutes += diff;
+  updateClock();
+}
 
-        // 드래그 종료 이벤트 핸들러
-        document.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                // 드래그 종료 후 부드러운 움직임 복구
-                minuteHand.style.transition = 'transform 0.1s linear'; 
-                minuteHand.style.cursor = 'grab';
-                
-                // 드래그 종료 후 다시 시스템 시간으로 동기화합니다.
-                startClock(); 
-            }
-        });
-    </script>
-    </body>
+// 이벤트
+minuteHand.addEventListener('mousedown', () => isDragging = true);
+minuteHand.addEventListener('touchstart', e => { e.preventDefault(); isDragging = true; }, {passive:false});
+
+document.addEventListener('mousemove', handleMove);
+document.addEventListener('touchmove', handleMove, {passive:false});
+
+document.addEventListener('mouseup',   () => isDragging = false);
+document.addEventListener('touchend',  () => isDragging = false);
+
+// 초기화
+updateClock();
+</script>
+
+</body>
 </html>
