@@ -16,6 +16,10 @@
         .btn-primary:hover { background-color: #D97706; transform: translateY(-2px); }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 읽기 미션 선택 효과 */
+        .reading-selected { border-color: #F59E0B !important; background-color: #FFFBEB !important; transform: scale(1.02); }
+        .reading-matched { border-color: #10B981 !important; background-color: #ECFDF5 !important; color: #047857; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
@@ -34,18 +38,17 @@
     </header>
 
     <nav class="flex border-b border-gray-100 text-lg overflow-x-auto" id="main-nav">
-        <button onclick="switchTab('intro')" id="tab-intro" class="flex-1 py-4 px-6 text-center tab-active">시작하기</button>
-        <button onclick="switchTab('listening')" id="tab-listening" class="flex-1 py-4 px-6 text-center tab-inactive cursor-not-allowed" disabled>듣기 미션</button>
-        <button onclick="switchTab('reading')" id="tab-reading" class="flex-1 py-4 px-6 text-center tab-inactive cursor-not-allowed" disabled>읽기 미션</button>
-        <button onclick="switchTab('writing')" id="tab-writing" class="flex-1 py-4 px-6 text-center tab-inactive cursor-not-allowed" disabled>쓰기 미션</button>
-        <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-4 px-6 text-center tab-inactive cursor-not-allowed" disabled>결과</button>
+        <button onclick="switchTab('intro')" id="tab-intro" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-active">시작하기</button>
+        <button onclick="switchTab('listening')" id="tab-listening" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-inactive cursor-not-allowed" disabled>👂 듣기 미션</button>
+        <button onclick="switchTab('reading')" id="tab-reading" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-inactive cursor-not-allowed" disabled>📚 읽기 미션</button>
+        <button onclick="switchTab('writing')" id="tab-writing" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-inactive cursor-not-allowed" disabled>✍️ 쓰기 미션</button>
+        <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-inactive cursor-not-allowed" disabled>🏆 결과</button>
     </nav>
 
-    <main class="flex-grow p-6 md:p-8 bg-[#FAFAFA]">
+    <main class="flex-grow p-6 md:p-8 bg-[#FAFAFA] relative">
 
-        <!-- INTRO -->
         <section id="view-intro" class="fade-in max-w-lg mx-auto text-center pt-10">
-            <div class="text-6xl mb-6">궁금이</div>
+            <div class="text-6xl mb-6">🦁</div>
             <h2 class="text-2xl font-bold mb-4">질문 마스터에 도전!</h2>
             <p class="text-gray-600 mb-8 leading-relaxed">
                 Be동사로 질문하고 답하는 걸<br>완벽하게 배워볼 거예요!<br>3가지 미션으로 재밌게 해보자
@@ -55,114 +58,157 @@
                 <input type="text" id="username-input" class="w-full text-lg p-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-500" placeholder="예: 하준">
             </div>
             <button onclick="startMission()" class="w-full btn-primary py-4 rounded-xl text-xl font-bold shadow-lg">
-                미션 시작하기
+                미션 시작하기 🚀
             </button>
         </section>
 
-        <!-- LISTENING -->
         <section id="view-listening" class="hidden fade-in">
-            <h2 class="text-xl font-bold text-amber-700 mb-6">미션 1: 듣고 맞는 답 고르기</h2>
-            <div id="listening-container" class="space-y-8"></div>
+            <h2 class="text-xl font-bold text-amber-700 mb-2">미션 1: 듣고 맞는 답 고르기 (총 5문제)</h2>
+            <p class="text-sm text-gray-500 mb-6">스피커를 눌러 질문을 듣고, 알맞은 대답을 선택하세요.</p>
+            
+            <div id="listening-container" class="space-y-6"></div>
+            
             <div class="mt-10 text-right">
-                <button onclick="completeSection('listening','reading')" class="bg-gray-800 text-white px-8 py-3 rounded-xl font-bold">다음 미션</button>
+                <button onclick="completeSection('listening','reading')" class="bg-gray-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition">다음 미션 👉</button>
             </div>
         </section>
 
-        <!-- READING -->
         <section id="view-reading" class="hidden fade-in">
-            <h2 class="text-xl font-bold text-amber-700 mb-6">미션 2: 질문과 답변 연결하기</h2>
-            <p class="text-gray-600 mb-8">오른쪽 답변(A~E)을 클릭하면 왼쪽 질문과 선으로 연결돼요!</p>
-            <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-                <div id="questions" class="space-y-6"></div>
-                <div id="answers" class="space-y-6"></div>
+            <h2 class="text-xl font-bold text-amber-700 mb-2">미션 2: 짝꿍 찾기 (총 5문제)</h2>
+            <p class="text-sm text-gray-500 mb-6">왼쪽의 <b>질문</b>을 먼저 누르고, 오른쪽에서 알맞은 <b>대답</b>을 찾아 눌러주세요!</p>
+            
+            <div class="grid grid-cols-2 gap-4 md:gap-12 max-w-4xl mx-auto">
+                <div class="space-y-4">
+                    <h3 class="font-bold text-center text-gray-400 mb-2">질문 (Questions)</h3>
+                    <div id="questions-list" class="space-y-4"></div>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="font-bold text-center text-gray-400 mb-2">답변 (Answers)</h3>
+                    <div id="answers-list" class="space-y-4"></div>
+                </div>
             </div>
+            
+            <div class="mt-6 text-center">
+                 <button onclick="resetReading()" class="text-sm text-gray-400 underline hover:text-gray-600">다시 연결하기</button>
+            </div>
+
             <div class="mt-10 text-right">
-                <button onclick="completeSection('reading','writing')" class="bg-gray-800 text-white px-8 py-3 rounded-xl font-bold">다음 미션</button>
+                <button onclick="completeSection('reading','writing')" class="bg-gray-800 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition">다음 미션 👉</button>
             </div>
         </section>
 
-        <!-- WRITING -->
         <section id="view-writing" class="hidden fade-in">
-            <h2 class="text-xl font-bold text-amber-700 mb-6">미션 3: 직접 써보기</h2>
-            <div id="writing-container" class="space-y-10 max-w-2xl mx-auto"></div>
+            <h2 class="text-xl font-bold text-amber-700 mb-2">미션 3: 직접 써보기 (총 5문제)</h2>
+            <p class="text-sm text-gray-500 mb-6">빈칸에 정답을 적거나, 단어를 순서대로 써보세요.</p>
+            
+            <div id="writing-container" class="space-y-8 max-w-2xl mx-auto"></div>
+            
             <div class="mt-10 text-right">
-                <button onclick="finishQuiz()" class="btn-primary px-8 py-3 rounded-xl font-bold text-lg">결과 보기</button>
+                <button onclick="finishQuiz()" class="btn-primary px-8 py-3 rounded-xl font-bold text-lg shadow-md">결과 보기 🏆</button>
             </div>
         </section>
 
-        <!-- REPORT -->
         <section id="view-report" class="hidden fade-in">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2">탐험 결과</h2>
-                <p id="score-message" class="text-lg text-gray-600"></p>
+                <p id="score-message" class="text-lg text-gray-600">채점 중...</p>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border text-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border text-center flex flex-col items-center">
                     <div class="chart-container"><canvas id="scoreChart"></canvas></div>
-                    <p class="text-4xl font-bold text-amber-600 mt-4" id="final-score">0점</p>
-                    <p class="text-xs text-gray-400">총 150점 만점</p>
+                    <div class="mt-4">
+                        <p class="text-4xl font-bold text-amber-600" id="final-score">0점</p>
+                        <p class="text-xs text-gray-400">총 150점 만점</p>
+                    </div>
                 </div>
                 <div class="space-y-6">
-                    <div class="bg-blue-50 p-6 rounded-xl">
-                        <h3 class="font-bold text-blue-800 mb-3">선생님 피드백</h3>
-                        <p id="feedback-text" class="text-blue-900"></p>
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                        <h3 class="font-bold text-blue-800 mb-3">💡 선생님 피드백</h3>
+                        <p id="feedback-text" class="text-blue-900 leading-relaxed"></p>
                     </div>
-                    <div class="bg-white p-5 rounded-xl border">
+                    <div class="bg-white p-5 rounded-xl border border-gray-100">
+                        <h3 class="font-bold text-gray-700 mb-4">영역별 점수</h3>
                         <div class="space-y-4 text-sm">
-                            <div><div class="flex justify-between"><span>듣기</span><span id="progress-listening-val">0/50</span></div>
-                                <div class="w-full bg-gray-200 rounded-full h-3"><div id="progress-listening" class="bg-green-500 h-3 rounded-full" style="width:0%"></div></div></div>
-                            <div><div class="flex justify-between"><span>읽기</span><span id="progress-reading-val">0/50</span></div>
-                                <div class="w-full bg-gray-200 rounded-full h-3"><div id="progress-reading" class="bg-blue-500 h-3 rounded-full" style="width:0%"></div></div></div>
-                            <div><div class="flex justify-between"><span>쓰기</span><span id="progress-writing-val">0/50</span></div>
-                                <div class="w-full bg-gray-200 rounded-full h-3"><div id="progress-writing" class="bg-amber-500 h-3 rounded-full" style="width:0%"></div></div></div>
+                            <div>
+                                <div class="flex justify-between mb-1"><span>듣기 (Listening)</span><span id="progress-listening-val">0/50</span></div>
+                                <div class="w-full bg-gray-200 rounded-full h-3"><div id="progress-listening" class="bg-green-500 h-3 rounded-full" style="width:0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1"><span>읽기 (Reading)</span><span id="progress-reading-val">0/50</span></div>
+                                <div class="w-full bg-gray-200 rounded-full h-3"><div id="progress-reading" class="bg-blue-500 h-3 rounded-full" style="width:0%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1"><span>쓰기 (Writing)</span><span id="progress-writing-val">0/50</span></div>
+                                <div class="w-full bg-gray-200 rounded-full h-3"><div id="progress-writing" class="bg-amber-500 h-3 rounded-full" style="width:0%"></div></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="text-center mt-8">
-                <button onclick="location.reload()" class="text-gray-500 underline">다시 도전하기</button>
+            <div class="text-center mt-12">
+                <button onclick="location.reload()" class="text-gray-400 underline hover:text-gray-600 text-sm">처음부터 다시 도전하기</button>
             </div>
         </section>
     </main>
 </div>
 
 <script>
+// --- 데이터 ---
 const quizData = {
     listening: [
-        {id:1, audio:"Are you a student?", options:["Yes, I am.","Yes, he is.","No, they aren't."], correct:0},
-        {id:2, audio:"Is your mother at home?", options:["Yes, I am.","No, she's not.","Yes, it is."], correct:1},
-        {id:3, audio:"What's your name?", options:["I'm Tom.","I'm nine years old.","I'm happy."], correct:0},
-        {id:4, audio:"Where are you from?", options:["Korea.","Blue.","Fine, thanks."], correct:0},
-        {id:5, audio:"How are your parents?", options:["I'm fine.","They're fine.","Yes, they are."], correct:1}
+        {id:1, audio:"Are you a student?", question:"이 질문에 맞는 대답은?", options:["Yes, I am.","Yes, he is.","No, they aren't."], correct:0},
+        {id:2, audio:"Is your mother at home?", question:"이 질문에 맞는 대답은?", options:["Yes, I am.","No, she's not.","Yes, it is."], correct:1},
+        {id:3, audio:"What's your name?", question:"이름을 물어볼 때 대답은?", options:["I'm Tom.","I'm nine years old.","I'm happy."], correct:0},
+        {id:4, audio:"Where are you from?", question:"출신을 물어볼 때 대답은?", options:["Korea.","Blue.","Fine, thanks."], correct:0},
+        {id:5, audio:"How are your parents?", question:"부모님 안부를 물을 때 대답은?", options:["I'm fine.","They're fine.","Yes, they are."], correct:1}
     ],
-    reading: [ // 질문-답변 짝짓기 (5문제)
-        {id:6, question:"Are you married?", answer:"B", text:"No, I'm not."},
-        {id:7, question:"Is she a teacher?", answer:"A", text:"Yes, she is."},
-        {id:8, question:"What color is your car?", answer:"C", text:"Red."},
-        {id:9, question:"How are your parents?", answer:"D", text:"They're fine."},
-        {id:10,question:"Where are you from?", answer:"E", text:"I'm from Korea."}
+    reading: [ 
+        {id:6, qText:"Are you married?", aId: "A", aText:"No, I'm not."},
+        {id:7, qText:"Is she a teacher?", aId: "B", aText:"Yes, she is."},
+        {id:8, qText:"What color is your car?", aId: "C", aText:"Red."},
+        {id:9, qText:"How are your parents?", aId: "D", aText:"They're fine."},
+        {id:10, qText:"Where are you from?", aId: "E", aText:"I'm from Korea."}
     ],
     writing: [
-        {id:11, question:"Are you hungry?", hint:"(Yes) →", correct:["Yes, I am","Yes, I am.","yes i am"]},
-        {id:12, question:"Is it cold today?", hint:"(No) →", correct:["No, it isn't","No, it isn't.","No, it's not","no it isn't"]},
-        {id:13, question:"Are your hands cold?", hint:"(Yes) →", correct:["Yes, they are","Yes, they are.","yes they are"]},
-        {id:14, words:["you","are","student","a"], correct:["Are you a student","Are you a student?","are you a student"]},
-        {id:15, words:["name","what","your","is"], correct:["What is your name","What is your name?","what is your name"]}
+        {id:11, question:"Are you hungry?", hint:"(Yes) →", correct:["Yes, I am", "yes i am"]},
+        {id:12, question:"Is it cold today?", hint:"(No) →", correct:["No, it isn't", "no it isn't", "No, it is not", "No, it's not"]},
+        {id:13, question:"Are your hands cold?", hint:"(Yes) →", correct:["Yes, they are", "yes they are"]},
+        {id:14, words:["you","are","student","a"], correct:["Are you a student", "are you a student"]},
+        {id:15, words:["name","what","your","is"], correct:["What is your name", "what is your name"]}
     ]
 };
 
+// --- 상태 관리 ---
 let state = {
     username: "",
     scores: {listening:0, reading:0, writing:0},
-    userAnswers: {listening:{}, reading:{}, writing:{}},
-    connections: {} // 읽기 미션 연결 저장
+    userAnswers: {
+        listening:{}, 
+        reading:{}, // {questionID: answerID} 형태
+        writing:{}
+    },
+    readingSelection: { q: null } // 현재 선택된 질문 ID
 };
 
-function switchTab(tab){ /* 기존과 동일 */ 
-    ['intro','listening','reading','writing','report'].forEach(id=>document.getElementById('view-'+id).classList.add('hidden'));
-    document.getElementById('view-'+tab).classList.remove('hidden');
-    document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('tab-active')); 
-    document.getElementById('tab-'+tab).classList.add('tab-active');
+// --- 네비게이션 ---
+function switchTab(tabId){ 
+    ['intro','listening','reading','writing','report'].forEach(id => {
+        document.getElementById('view-'+id).classList.add('hidden');
+        const btn = document.getElementById('tab-'+id);
+        if(btn) {
+            btn.classList.remove('tab-active');
+            btn.classList.add('tab-inactive');
+        }
+    });
+    
+    document.getElementById('view-'+tabId).classList.remove('hidden');
+    const activeBtn = document.getElementById('tab-'+tabId);
+    if(activeBtn) {
+        activeBtn.classList.remove('tab-inactive');
+        activeBtn.classList.add('tab-active');
+        activeBtn.disabled = false;
+        activeBtn.classList.remove('cursor-not-allowed');
+    }
 }
 
 function startMission(){
@@ -171,29 +217,56 @@ function startMission(){
     state.username = name;
     document.getElementById('display-name').textContent = name;
     document.getElementById('user-display').classList.remove('hidden');
+    
     renderListening();
     switchTab('listening');
 }
 
+function completeSection(curr, next){
+    // 간단한 유효성 검사 (개수 체크)
+    let count = 0;
+    if(curr === 'listening') count = Object.keys(state.userAnswers.listening).length;
+    if(curr === 'reading') count = Object.keys(state.userAnswers.reading).length;
+    
+    if(count < 5) {
+        alert("모든 문제를 풀어주세요! 🥺");
+        return;
+    }
+    
+    if(next === 'reading') renderReading();
+    if(next === 'writing') renderWriting();
+    switchTab(next);
+}
+
+// --- 1. 듣기 (Listening) ---
 function playAudio(text){
     if('speechSynthesis' in window){
+        window.speechSynthesis.cancel();
         const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'en-US'; utter.rate = 0.8;
+        utter.lang = 'en-US'; 
+        utter.rate = 0.8; 
         speechSynthesis.speak(utter);
+    } else {
+        alert("브라우저가 음성을 지원하지 않습니다.");
     }
 }
 
-// 1. 듣기
 function renderListening(){
-    document.getElementById('listening-container').innerHTML = quizData.listening.map((q,i)=>`
-        <div class="bg-white p-6 rounded-2xl shadow-sm border">
-            <div class="flex items-center gap-6">
-                <button onclick="playAudio('${q.audio}')" class="w-16 h-16 bg-amber-500 rounded-full text-white hover:bg-amber-600 shadow-lg">
-                    <span class="text-2xl">스피커</span>
-                </button>
-                <div class="flex-1 space-y-3">
+    const container = document.getElementById('listening-container');
+    container.innerHTML = quizData.listening.map((q,i)=>`
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="flex flex-col items-center">
+                    <span class="text-xs font-bold text-amber-600 mb-2">문제 ${i+1}</span>
+                    <button onclick="playAudio('${q.audio.replace(/'/g,"\\'")}')" class="w-16 h-16 bg-amber-500 rounded-full text-white hover:bg-amber-600 shadow-lg flex items-center justify-center transform transition hover:scale-105">
+                        <span class="text-2xl">🔊</span>
+                    </button>
+                    <p class="text-xs text-gray-400 mt-2">듣기</p>
+                </div>
+                <div class="flex-1 w-full space-y-3">
+                    <p class="font-bold text-gray-700 mb-2">${q.question}</p>
                     ${q.options.map((opt,idx)=>`
-                        <button onclick="selectListening(${q.id},${idx},this)" class="block w-full text-left p-4 rounded-xl border-2 ${state.userAnswers.listening[q.id]===idx?'bg-amber-500 text-white border-amber-500':'border-gray-300 hover:border-amber-400'}">
+                        <button onclick="selectListening(${q.id},${idx},this)" class="listen-opt-${q.id} w-full text-left p-4 rounded-xl border-2 transition-all ${state.userAnswers.listening[q.id]===idx ? 'bg-amber-500 text-white border-amber-500' : 'border-gray-200 hover:border-amber-300 hover:bg-amber-50'}">
                             ${opt}
                         </button>
                     `).join('')}
@@ -202,120 +275,219 @@ function renderListening(){
         </div>
     `).join('');
 }
-function selectListening(id, idx, el){
-    state.userAnswers.listening[id] = idx;
-    el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('bg-amber-500','text-white','border-amber-500'));
+
+function selectListening(qId, optIdx, el){
+    state.userAnswers.listening[qId] = optIdx;
+    // UI 업데이트
+    document.querySelectorAll(`.listen-opt-${qId}`).forEach(b => {
+        b.classList.remove('bg-amber-500','text-white','border-amber-500');
+        b.classList.add('border-gray-200');
+    });
+    el.classList.remove('border-gray-200','hover:bg-amber-50');
     el.classList.add('bg-amber-500','text-white','border-amber-500');
 }
 
-// 2. 읽기 - 질문·답변 짝짓기 (드래그 대신 클릭으로 연결)
+// --- 2. 읽기 (Reading) - 로직 완전 수정 ---
 function renderReading(){
-    const questionsDiv = document.getElementById('questions');
-    const answersDiv = document.getElementById('answers');
-    const shuffled = [...quizData.reading].sort(()=>Math.random()-0.5);
+    const qList = document.getElementById('questions-list');
+    const aList = document.getElementById('answers-list');
     
-    questionsDiv.innerHTML = quizData.reading.map((q,i)=>`
-        <div class="bg-white p-6 rounded-2xl shadow-sm border flex items-center justify-between">
-            <span class="font-bold text-lg">${i+1}. ${q.question}</span>
-            <div id="line-${q.id}" class="w-20 h-1 bg-gray-300"></div>
-        </div>
+    // 답변 섞기
+    // 답변 목록을 생성할 때, 원본 데이터의 ID(id)와 답변 내용(aText)을 매핑하여 렌더링해야 함.
+    // quizData.reading의 각 항목은 하나의 문제(질문+답변) 세트임.
+    // 따라서 답변 목록은 이 세트들을 섞어서 보여주되, 클릭 시 해당 답변이 속한 문제의 ID를 추적할 수 있어야 함.
+    const shuffledAnswers = [...quizData.reading].sort(() => Math.random() - 0.5);
+
+    qList.innerHTML = quizData.reading.map(q => `
+        <button id="q-btn-${q.id}" onclick="clickQuestion(${q.id})" class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-amber-300 transition-all bg-white relative">
+            <span class="font-bold text-gray-700">Q. ${q.qText}</span>
+            <span id="q-check-${q.id}" class="absolute right-4 top-4 text-green-500 hidden">✔</span>
+        </button>
     `).join('');
-    
-    answersDiv.innerHTML = shuffled.map((q,i)=>`
-        <button onclick="connect(${q.id})" id="ans-${q.id}" class="block w-full text-left p-6 rounded-2xl border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 font-medium">
-            ${String.fromCharCode(65+i)}. ${q.text}
+
+    aList.innerHTML = shuffledAnswers.map(a => `
+        <button id="a-btn-${a.id}" onclick="clickAnswer(${a.id})" class="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-amber-300 transition-all bg-white">
+            <span class="font-bold text-gray-600">${a.aText}</span>
         </button>
     `).join('');
 }
-function connect(answerId){
-    const selectedQ = document.querySelector('[data-selected]');
-    if(!selectedQ){
-        alert("먼저 왼쪽 질문을 클릭해 주세요!");
+
+function clickQuestion(id) {
+    // 이미 연결된 질문이면 무시하지 않고, 다시 선택 가능하도록 (수정) 할 수도 있지만, 
+    // 여기서는 간단하게 기존 선택을 해제하고 새로 선택하도록 함.
+    
+    // 이전에 선택된 질문 스타일 해제
+    if(state.readingSelection.q) {
+        const prevBtn = document.getElementById(`q-btn-${state.readingSelection.q}`);
+        if(prevBtn && !state.userAnswers.reading[state.readingSelection.q]) {
+            prevBtn.classList.remove('reading-selected');
+        }
+    }
+
+    state.readingSelection.q = id;
+    const btn = document.getElementById(`q-btn-${id}`);
+    btn.classList.add('reading-selected');
+}
+
+function clickAnswer(targetAnswerId) { // targetAnswerId는 해당 답변이 원래 속해있던 문제의 ID
+    if (!state.readingSelection.q) {
+        alert("왼쪽의 질문을 먼저 선택해주세요!");
         return;
     }
-    const qId = selectedQ.dataset.qid;
-    state.connections[qId] = answerId;
-    document.getElementById(`line-${qId}`).classList.add('bg-blue-500');
-    document.getElementById(`ans-${answerId}`).classList.add('bg-blue-500','text-white');
-    selectedQ.dataset.selected = "";
-}
-document.getElementById('questions').addEventListener('click', e=>{
-    if(e.target.closest('div')){
-        document.querySelectorAll('#questions [data-selected]').forEach(d=>d.removeAttribute('data-selected'));
-        e.target.closest('div').dataset.selected = "true";
-        e.target.closest('div').dataset.qid = e.target.closest('div').querySelector('div').id.split('-')[1];
-    }
-});
 
-// 3. 쓰기
+    const qId = state.readingSelection.q;
+    
+    // 정답 저장 (유저가 qId 질문에 대해 targetAnswerId 답변을 선택함)
+    // 주의: 여기서 targetAnswerId는 답변 텍스트가 속한 문제의 ID입니다.
+    state.userAnswers.reading[qId] = targetAnswerId; 
+
+    // UI 반영 (질문과 답변 모두 '연결됨' 스타일 적용)
+    document.getElementById(`q-btn-${qId}`).classList.remove('reading-selected');
+    document.getElementById(`q-btn-${qId}`).classList.add('reading-matched');
+    document.getElementById(`q-check-${qId}`).classList.remove('hidden');
+    
+    // 답변 버튼 스타일 적용 (이 답변 버튼은 targetAnswerId를 가짐)
+    // 기존에 이 답변이 다른 질문에 연결되어 있었다면 스타일 초기화가 필요하지만, 
+    // 간단한 로직을 위해 '마지막 선택'을 보여줌.
+    
+    // 모든 답변 버튼의 스타일을 확인하여, 현재 질문에 연결된 것만 강조
+    document.querySelectorAll('[id^="a-btn-"]').forEach(btn => {
+        // 만약 이전에 이 버튼이 선택되었었다면 스타일 초기화 (단순화)
+        if(btn.id === `a-btn-${targetAnswerId}`) {
+            btn.classList.add('reading-matched');
+        }
+    });
+
+    // 선택 초기화
+    state.readingSelection.q = null;
+}
+
+function resetReading() {
+    state.userAnswers.reading = {};
+    state.readingSelection.q = null;
+    renderReading();
+}
+
+
+// --- 3. 쓰기 (Writing) ---
 function renderWriting(){
-    document.getElementById('writing-container').innerHTML = quizData.writing.map((q,i)=>{
-        if(q.words){
-            return `<div class="bg-white p-6 rounded-2xl shadow-sm border text-center">
-                <p class="text-lg font-bold mb-6">단어를 순서대로 배열해서 질문 만들기</p>
-                <div class="flex flex-wrap justify-center gap-3 mb-6">
-                    ${q.words.map(w=>`<span class="bg-gray-200 px-5 py-3 rounded-lg text-lg">${w}</span>`).join('')}
+    const container = document.getElementById('writing-container');
+    container.innerHTML = quizData.writing.map((q,i) => {
+        if(q.words) {
+            // 단어 배열 문제
+            return `
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <span class="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full mb-3 font-bold">문제 ${i+11}</span>
+                <p class="text-lg font-bold mb-4 text-gray-800">단어를 순서대로 배열해서 질문을 만드세요.</p>
+                <div class="flex flex-wrap justify-center gap-2 mb-6 p-4 bg-gray-50 rounded-xl">
+                    ${q.words.map(w => `<span class="bg-white border-2 border-amber-200 px-3 py-2 rounded-lg font-bold text-amber-700 shadow-sm">${w}</span>`).join('')}
                 </div>
-                <input type="text" oninput="state.userAnswers.writing[${q.id}]=this.value" class="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-green-500 text-lg" placeholder="여기에 질문 쓰기">
+                <input type="text" oninput="handleWritingInput(${q.id}, this.value)" class="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-amber-500 text-lg font-mono placeholder-gray-300 transition" placeholder="정답을 적어보세요">
             </div>`;
-        }else{
-            return `<div class="bg-white p-6 rounded-2xl shadow-sm border">
-                <p class="text-xl font-bold mb-3">${q.question}</p>
-                <p class="text-gray-600 mb-4">${q.hint}</p>
-                <input type="text" oninput="state.userAnswers.writing[${q.id}]=this.value" class="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-green-500 text-lg" placeholder="답변을 적어 주세요">
+        } else {
+            // 빈칸/답변 문제
+            return `
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mb-3 font-bold">문제 ${i+11}</span>
+                <p class="text-xl font-bold mb-2 text-gray-800">${q.question}</p>
+                <p class="text-sm text-gray-500 mb-4">힌트: ${q.hint}</p>
+                <input type="text" oninput="handleWritingInput(${q.id}, this.value)" class="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-amber-500 text-lg font-mono placeholder-gray-300 transition" placeholder="답변을 적어보세요">
             </div>`;
         }
     }).join('');
 }
 
-function completeSection(curr, next){
-    const cnt = Object.keys(state.userAnswers[curr]).length;
-    if(cnt < 5) return alert("모든 문제를 풀어주세요!");
-    if(next==='reading') renderReading();
-    if(next==='writing') renderWriting();
-    switchTab(next);
+function handleWritingInput(id, val) {
+    state.userAnswers.writing[id] = val;
 }
 
+// --- 채점 및 결과 (Scoring) ---
 function finishQuiz(){
-    // 점수 계산
-    let l=0, r=0, w=0;
+    let scoreL = 0, scoreR = 0, scoreW = 0;
     
-    // 듣기
-    quizData.listening.forEach(q=> { if(state.userAnswers.listening[q.id]===q.correct) l+=10; });
-    
-    // 읽기 (짝짓기)
-    quizData.reading.forEach(q=> { 
-        const userAnswerId = Object.keys(state.connections).find(k=>state.connections[k]===q.id);
-        if(userAnswerId && quizData.reading.find(x=>x.id==userAnswerId).answer === q.answer) r+=10;
-    });
-    
-    // 쓰기
-    quizData.writing.forEach(q=>{
-        const user = (state.userAnswers.writing[q.id]||"").trim().toLowerCase().replace(/[.?]/g,'');
-        if(q.correct.some(c=>c.toLowerCase().replace(/[.?]/g,'')===user)) w+=10;
-    });
-    
-    const total = l+r+w;
-    state.scores = {listening:l, reading:r, writing:w};
-
-    // 결과 표시
-    document.getElementById('final-score').textContent = total+'점';
-    ['listening','reading','writing'].forEach(sec=>{
-        document.getElementById('progress-'+sec).style.width = (state.scores[sec]/50)*100+'%';
-        document.getElementById('progress-'+sec+'-val').textContent = state.scores[sec]+'/50';
+    // 1. 듣기 채점
+    quizData.listening.forEach(q => {
+        if(state.userAnswers.listening[q.id] === q.correct) scoreL += 10;
     });
 
+    // 2. 읽기 채점
+    // userAnswers.reading = { questionId: answerId }
+    // answerId는 해당 답변이 원래 속한 문제의 ID와 같음 (데이터 구조상)
+    quizData.reading.forEach(q => {
+        const userAnswer = state.userAnswers.reading[q.id];
+        if(userAnswer === q.id) { // 질문ID와 답변(의 원본질문ID)가 같으면 정답
+            scoreR += 10;
+        }
+    });
+
+    // 3. 쓰기 채점
+    quizData.writing.forEach(q => {
+        const user = (state.userAnswers.writing[q.id] || "").trim();
+        // 정규화: 소문자로 변환, 마침표/물음표 제거
+        const normalizedUser = user.toLowerCase().replace(/[.?]/g, "").replace(/\s+/g, " ");
+        const isCorrect = q.correct.some(ans => {
+            const normalizedAns = ans.toLowerCase().replace(/[.?]/g, "").replace(/\s+/g, " ");
+            return normalizedAns === normalizedUser;
+        });
+        
+        if(isCorrect) scoreW += 10;
+    });
+
+    const total = scoreL + scoreR + scoreW;
+    state.scores = { listening: scoreL, reading: scoreR, writing: scoreW };
+
+    // 결과 화면 렌더링
+    document.getElementById('final-score').textContent = total + "점";
+    
+    // 프로그레스 바
+    updateProgress('listening', scoreL);
+    updateProgress('reading', scoreR);
+    updateProgress('writing', scoreW);
+
+    // 피드백 메시지
     const fb = document.getElementById('feedback-text');
-    if(total===150){ fb.textContent = `${state.username} 친구, 완벽해요! 질문 마스터 등극!`; document.getElementById('score-message').textContent = "최고예요!"; }
-    else if(total>=100){ fb.textContent = `${state.username} 친구, 정말 잘했어요! 조금만 더 연습하면 완벽!`; document.getElementById('score-message').textContent = "멋져요!"; }
-    else{ fb.textContent = `${state.username} 친구, 수고했어요! 질문과 답변을 다시 연습해 볼까요? 화이팅!`; document.getElementById('score-message').textContent = "다음엔 더 잘할 수 있어요!"; }
+    const msg = document.getElementById('score-message');
+    
+    if(total === 150){ 
+        fb.innerHTML = `우와! <b>${state.username}</b> 친구, 정말 대단해요! <br>Be동사 질문과 답변을 완벽하게 이해했군요! 🎉`; 
+        msg.textContent = "🏆 완벽해요!"; 
+    } else if(total >= 100){ 
+        fb.innerHTML = `참 잘했어요 <b>${state.username}</b> 친구! <br>대부분 맞췄네요. 틀린 문제만 다시 한번 확인해볼까요? 👍`; 
+        msg.textContent = "😎 아주 훌륭해요!"; 
+    } else { 
+        fb.innerHTML = `수고했어요 <b>${state.username}</b> 친구! <br>아직 조금 헷갈리는 게 있나봐요. 다시 한번 천천히 풀어보면 다 맞을 수 있어요! 🌱`; 
+        msg.textContent = "💪 힘내세요!"; 
+    }
 
-    new Chart(document.getElementById('scoreChart').getContext('2d'),{
-        type:'doughnut', data:{labels:['맞음','틀림'], datasets:[{data:[total,150-total], backgroundColor:['#F59E0B','#E5E7EB'], borderWidth:0}]},
-        options:{responsive:true, plugins:{legend:{display:false}}, cutout:'75%'}
+    // 차트 그리기
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+    if(window.myChart) window.myChart.destroy();
+    window.myChart = new Chart(ctx, {
+        type: 'doughnut', 
+        data: {
+            labels: ['맞은 점수', '부족한 점수'], 
+            datasets: [{
+                data: [total, 150-total], 
+                backgroundColor: ['#F59E0B', '#E5E7EB'], 
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true, 
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: {enabled: false} }, 
+            cutout: '75%'
+        }
     });
 
     switchTab('report');
+}
+
+function updateProgress(type, score) {
+    const el = document.getElementById(`progress-${type}`);
+    const val = document.getElementById(`progress-${type}-val`);
+    el.style.width = `${(score/50)*100}%`;
+    val.textContent = `${score}/50`;
 }
 </script>
 </body>
