@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Be동사 마스터: 9세 영어 탐험</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+        
+
+        body {
+
+            font-family: 'Noto Sans KR', sans-serif;
+
+            background-color: #FDFBF7; /* Warm neutral background */
+
+            color: #4A4A4A;
+
+        }
+
+
+
+        /* Chart Container Styling - Mandatory Requirements */
+
+        .chart-container {
+
+            position: relative;
+
+            width: 100%;
+
+            max-width: 500px;
+
+            margin-left: auto;
+
+            margin-right: auto;
+
+            height: 300px;
+
+            max-height: 400px;
+
+        }
+
+
+
+        /* Custom scrollbar for better aesthetics */
+
+        ::-webkit-scrollbar {
+
+            width: 8px;
+
+        }
+
+        ::-webkit-scrollbar-track {
+
+            background: #f1f1f1; 
+
+        }
+
+        ::-webkit-scrollbar-thumb {
+
+            background: #D1D5DB; 
+
+            border-radius: 4px;
+
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+
+            background: #9CA3AF; 
+
+        }
+
+
+
+        .tab-active {
+
+            border-bottom: 4px solid #F59E0B; /* Amber-500 */
+
+            color: #B45309; /* Amber-700 */
+
+            font-weight: 700;
+
+        }
+
+        
+
+        .tab-inactive {
+
+            color: #9CA3AF;
+
+            font-weight: 500;
+
+        }
+
+
+
+        .btn-primary {
+
+            background-color: #F59E0B;
+
+            color: white;
+
+            transition: all 0.2s;
+
+        }
+
+        .btn-primary:hover {
+
+            background-color: #D97706;
+
+            transform: translateY(-2px);
+
+        }
+
+
+
+        .fade-in {
+
+            animation: fadeIn 0.5s ease-in-out;
+
+        }
+
+
+
+        @keyframes fadeIn {
+
+            from { opacity: 0; transform: translateY(10px); }
+
+            to { opacity: 1; transform: translateY(0); }
+
+        }
+
+    </style>
+
+    <!-- Chosen Palette: Warm Neutrals (Cream/Beige) with Amber/Orange accents for a friendly, encouraging learning environment. -->
+
+    <!-- Application Structure Plan:
+
+        1. Intro/Dashboard: Gamified entry to set the user's name.
+
+        2. Three Mission Tabs (Listening, Reading, Writing): Separated to focus attention.
+
+           - Listening: Uses Web Speech API to simulate the "Teacher's Voice" for an immersive experience.
+
+           - Reading: Interactive buttons for immediate selection feedback.
+
+           - Writing: Input fields with real-time validation logic.
+
+        3. Report Card: A visual summary using Chart.js to show mastery level and detailed feedback.
+
+        Rationale: This structure breaks the "test" into manageable "missions," reducing anxiety for a 9-year-old while maximizing engagement.
+
+    -->
+
+    <!-- Visualization & Content Choices:
+
+        - Listening Section: Audio buttons -> Goal: Test recognition -> Interaction: Click to hear, Click to select -> Uses Web Speech API.
+
+        - Reading Section: Fill-in-the-blank cards -> Goal: Test grammar logic -> Interaction: Choice selection -> Visual feedback.
+
+        - Writing Section: Input boxes -> Goal: Test production/spelling -> Interaction: Typing and checking -> Instant validation.
+
+        - Report Card: Doughnut Chart -> Goal: Summarize performance -> Interaction: Visualizing score -> Chart.js.
+
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+</head>
+
+<body class="p-4 md:p-8 min-h-screen">
+
+
+
+    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden min-h-[80vh] flex flex-col">
+
+        
+
+        <!-- Header -->
+
+        <header class="bg-[#FFF8E1] p-6 border-b border-orange-100 flex flex-col md:flex-row justify-between items-center">
+
+            <div>
+
+                <h1 class="text-2xl md:text-3xl font-bold text-amber-600">🎓 Be동사 마스터 탐험</h1>
+
+                <p class="text-sm text-gray-500 mt-1">9세 영어 문법 완전 정복 미션</p>
+
+            </div>
+
+            <div id="user-display" class="hidden mt-4 md:mt-0 flex items-center bg-white px-4 py-2 rounded-full shadow-sm">
+
+                <span class="text-2xl mr-2">👋</span>
+
+                <span id="display-name" class="font-bold text-gray-700">Student</span>
+
+                <span class="ml-2 text-xs text-gray-400">탐험가</span>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- Navigation -->
+
+        <nav class="flex border-b border-gray-100 text-lg overflow-x-auto" id="main-nav">
+
+            <button onclick="switchTab('intro')" id="tab-intro" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-active">시작하기</button>
+
+            <button onclick="switchTab('listening')" id="tab-listening" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-inactive cursor-not-allowed" disabled>👂 듣기 미션</button>
+
+            <button onclick="switchTab('reading')" id="tab-reading" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-inactive cursor-not-allowed" disabled>📚 읽기 미션</button>
+
+            <button onclick="switchTab('writing')" id="tab-writing" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-inactive cursor-not-allowed" disabled>✍️ 쓰기 미션</button>
+
+            <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-4 px-6 text-center whitespace-nowrap tab-inactive cursor-not-allowed" disabled>🏆 결과</button>
+
+        </nav>
+
+
+
+        <!-- Content Area -->
+
+        <main class="flex-grow p-6 md:p-8 bg-[#FAFAFA] relative">
+
+            
+
+            <!-- SECTION: INTRO -->
+
+            <section id="view-intro" class="fade-in max-w-lg mx-auto text-center pt-10">
+
+                <div class="text-6xl mb-6">🦁</div>
+
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">환영합니다!</h2>
+
+                <p class="text-gray-600 mb-8 leading-relaxed">
+
+                    오늘 배운 Be동사 (am, is, are)를 얼마나 잘 이해했는지<br>
+
+                    3가지 미션을 통해 확인해 볼까요?
+
+                </p>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+
+                    <label class="block text-left text-sm font-bold text-gray-500 mb-2">이름을 알려주세요</label>
+
+                    <input type="text" id="username-input" class="w-full text-lg p-3 border-2 border-amber-200 rounded-xl focus:outline-none focus:border-amber-500 transition-colors" placeholder="예: 지수">
+
+                </div>
+
+                <button onclick="startMission()" class="w-full btn-primary py-4 rounded-xl text-xl font-bold shadow-lg">
+
+                    미션 시작하기 🚀
+
+                </button>
+
+            </section>
+
+
+
+            <!-- SECTION: LISTENING -->
+
+            <section id="view-listening" class="hidden fade-in">
+
+                <div class="mb-6">
+
+                    <h2 class="text-xl font-bold text-amber-700 mb-2">👂 미션 1: 듣기 평가</h2>
+
+                    <p class="text-sm text-gray-600">스피커 버튼을 눌러 문장을 듣고, 정답을 선택하세요. (총 5문제)</p>
+
+                </div>
+
+
+
+                <div id="listening-container" class="space-y-6">
+
+                    <!-- Dynamic Listening Content Generated by JS -->
+
+                </div>
+
+                
+
+                <div class="mt-8 flex justify-end">
+
+                    <button onclick="completeSection('listening', 'reading')" class="bg-gray-800 text-white px-8 py-3 rounded-xl hover:bg-black transition-colors font-bold shadow-md">
+
+                        다음 미션으로 이동 👉
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- SECTION: READING -->
+
+            <section id="view-reading" class="hidden fade-in">
+
+                <div class="mb-6">
+
+                    <h2 class="text-xl font-bold text-amber-700 mb-2">📚 미션 2: 읽기 평가</h2>
+
+                    <p class="text-sm text-gray-600">빈칸에 들어갈 알맞은 짝꿍(be동사)을 골라주세요. (총 5문제)</p>
+
+                </div>
+
+
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="reading-container">
+
+                    <!-- Dynamic Reading Content Generated by JS -->
+
+                </div>
+
+
+
+                <div class="mt-8 flex justify-end">
+
+                    <button onclick="completeSection('reading', 'writing')" class="bg-gray-800 text-white px-8 py-3 rounded-xl hover:bg-black transition-colors font-bold shadow-md">
+
+                        다음 미션으로 이동 👉
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- SECTION: WRITING -->
+
+            <section id="view-writing" class="hidden fade-in">
+
+                <div class="mb-6">
+
+                    <h2 class="text-xl font-bold text-amber-700 mb-2">✍️ 미션 3: 쓰기 평가</h2>
+
+                    <p class="text-sm text-gray-600">키보드로 직접 정답을 적어보세요. (총 5문제)</p>
+
+                </div>
+
+
+
+                <div id="writing-container" class="space-y-8">
+
+                    <!-- Dynamic Writing Content Generated by JS -->
+
+                </div>
+
+
+
+                <div class="mt-8 flex justify-end">
+
+                    <button onclick="finishQuiz()" class="btn-primary px-8 py-3 rounded-xl font-bold shadow-md text-lg">
+
+                        결과 확인하기 🏆
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- SECTION: REPORT -->
+
+            <section id="view-report" class="hidden fade-in">
+
+                <div class="text-center mb-8">
+
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">탐험 결과</h2>
+
+                    <p id="score-message" class="text-lg text-gray-600">결과를 분석 중입니다...</p>
+
+                </div>
+
+
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+                    <!-- Chart Column -->
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+
+                        <h3 class="font-bold text-gray-500 mb-4">정답률 분석</h3>
+
+                        <div class="chart-container">
+
+                            <canvas id="scoreChart"></canvas>
+
+                        </div>
+
+                        <div class="mt-4 text-center">
+
+                            <p class="text-4xl font-bold text-amber-600" id="final-score">0점</p>
+
+                            <p class="text-xs text-gray-400">총 150점 만점</p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Feedback Column -->
+
+                    <div class="space-y-4">
+
+                        <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
+
+                            <h3 class="font-bold text-blue-800 mb-2">💡 선생님의 칭찬 & 피드백</h3>
+
+                            <p id="feedback-text" class="text-blue-900 text-sm leading-relaxed">
+
+                                <!-- JS Populated -->
+
+                            </p>
+
+                        </div>
+
+
+
+                        <div class="bg-white p-5 rounded-xl border border-gray-100">
+
+                            <h3 class="font-bold text-gray-800 mb-3">학습 영역별 달성도</h3>
+
+                            <div class="space-y-3">
+
+                                <div>
+
+                                    <div class="flex justify-between text-xs mb-1">
+
+                                        <span>듣기 (기능/소리)</span>
+
+                                        <span id="progress-listening-val">0%</span>
+
+                                    </div>
+
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+
+                                        <div id="progress-listening" class="bg-green-500 h-2.5 rounded-full" style="width: 0%"></div>
+
+                                    </div>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="flex justify-between text-xs mb-1">
+
+                                        <span>읽기 (문법 짝꿍)</span>
+
+                                        <span id="progress-reading-val">0%</span>
+
+                                    </div>
+
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+
+                                        <div id="progress-reading" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
+
+                                    </div>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="flex justify-between text-xs mb-1">
+
+                                        <span>쓰기 (줄임말/문장)</span>
+
+                                        <span id="progress-writing-val">0%</span>
+
+                                    </div>
+
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+
+                                        <div id="progress-writing" class="bg-amber-500 h-2.5 rounded-full" style="width: 0%"></div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="mt-8 text-center">
+
+                    <button onclick="location.reload()" class="text-gray-500 underline hover:text-gray-800 text-sm">
+
+                        처음부터 다시 하기
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+        </main>
+
+    </div>
+
+
+
+    <!-- Application Logic -->
+
+    <script>
+
+        // --- Data Storage ---
+
+        const quizData = {
+
+            listening: [
+
+                { id: 1, audio: "I am a singer.", question: "이 문장과 어울리는 사람은?", options: [{text: "👨‍🎓 학생", val: 0}, {text: "🎤 가수", val: 1}], correct: 1, type: "기능(신분)" },
+
+                { id: 2, audio: "He is tired.", question: "주인공의 상태는?", options: [{text: "😴 피곤해요", val: 0}, {text: "🤩 신나요", val: 1}], correct: 0, type: "기능(상태)" },
+
+                { id: 3, audio: "We are in the classroom.", question: "우리가 있는 장소는?", options: [{text: "🏫 교실", val: 0}, {text: "🛝 운동장", val: 1}], correct: 0, type: "기능(장소)" },
+
+                { id: 4, audio: "They're fast.", question: "They're 의 원래 형태는?", options: [{text: "They is", val: 0}, {text: "They are", val: 1}], correct: 1, type: "줄임말" },
+
+                { id: 5, audio: "She is my sister.", question: "문장의 주인공(주어)은?", options: [{text: "I", val: 0}, {text: "She", val: 1}], correct: 1, type: "주어찾기" }
+
+            ],
+
+            reading: [
+
+                { id: 6, text: "I ___ a good friend.", options: ["am", "is", "are"], correct: "am" },
+
+                { id: 7, text: "The cat ___ white.", options: ["am", "is", "are"], correct: "is" },
+
+                { id: 8, text: "We ___ thirsty.", options: ["am", "is", "are"], correct: "are" },
+
+                { id: 9, text: "You ___ funny.", options: ["am", "is", "are"], correct: "are" },
+
+                { id: 10, text: "My books ___ on the table.", options: ["am", "is", "are"], correct: "are" }
+
+            ],
+
+            writing: [
+
+                { id: 11, type: "contraction", q: "I am happy.", hint: "줄임말(Contraction)로 바꾸세요", correct: ["I'm happy", "i'm happy", "Im happy"] },
+
+                { id: 12, type: "contraction", q: "She is my mom.", hint: "줄임말(Contraction)로 바꾸세요", correct: ["She's my mom", "she's my mom", "shes my mom"] },
+
+                { id: 13, type: "full", q: "We're great.", hint: "원래 형태(Full Form)로 바꾸세요", correct: ["We are great", "we are great"] },
+
+                { id: 14, type: "full", q: "It's cold.", hint: "원래 형태(Full Form)로 바꾸세요", correct: ["It is cold", "it is cold"] },
+
+                { id: 15, type: "make", img: "😣", context: "배고픈 소년 (Boy)", hint: "He, is, hungry 를 사용해서 문장을 완성하세요", correct: ["He is hungry", "he is hungry"] }
+
+            ]
+
+        };
+
+
+
+        // --- State Management ---
+
+        let state = {
+
+            username: "",
+
+            scores: {
+
+                listening: 0,
+
+                reading: 0,
+
+                writing: 0
+
+            },
+
+            userAnswers: {
+
+                listening: {},
+
+                reading: {},
+
+                writing: {}
+
+            }
+
+        };
+
+
+
+        // --- Navigation Logic ---
+
+        function switchTab(tabId) {
+
+            // Hide all sections
+
+            ['intro', 'listening', 'reading', 'writing', 'report'].forEach(id => {
+
+                document.getElementById(`view-${id}`).classList.add('hidden');
+
+                const btn = document.getElementById(`tab-${id}`);
+
+                if (btn) {
+
+                    btn.classList.remove('tab-active');
+
+                    btn.classList.add('tab-inactive');
+
+                }
+
+            });
+
+
+
+            // Show selected section
+
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+
+            if (activeBtn) {
+
+                activeBtn.classList.remove('tab-inactive');
+
+                activeBtn.classList.add('tab-active');
+
+                activeBtn.disabled = false;
+
+                activeBtn.classList.remove('cursor-not-allowed');
+
+            }
+
+        }
+
+
+
+        function startMission() {
+
+            const nameInput = document.getElementById('username-input').value.trim();
+
+            if (!nameInput) {
+
+                alert("이름을 입력해주세요!");
+
+                return;
+
+            }
+
+            state.username = nameInput;
+
+            document.getElementById('display-name').textContent = state.username;
+
+            document.getElementById('user-display').classList.remove('hidden');
+
+            
+
+            renderListening();
+
+            switchTab('listening');
+
+        }
+
+
+
+        function completeSection(current, next) {
+
+            // Validation: Check if all questions in current section are answered
+
+            if (current === 'listening') {
+
+                if (Object.keys(state.userAnswers.listening).length < 5) {
+
+                    alert("모든 문제를 풀어주세요!");
+
+                    return;
+
+                }
+
+                renderReading();
+
+            } else if (current === 'reading') {
+
+                if (Object.keys(state.userAnswers.reading).length < 5) {
+
+                    alert("모든 빈칸을 채워주세요!");
+
+                    return;
+
+                }
+
+                renderWriting();
+
+            }
+
+            switchTab(next);
+
+        }
+
+
+
+        // --- TTS Logic (Web Speech API) ---
+
+        function playAudio(text) {
+
+            if ('speechSynthesis' in window) {
+
+                const utterance = new SpeechSynthesisUtterance(text);
+
+                utterance.lang = 'en-US';
+
+                utterance.rate = 0.8; // Slower for kids
+
+                window.speechSynthesis.speak(utterance);
+
+            } else {
+
+                alert("이 브라우저는 음성 재생을 지원하지 않습니다. 텍스트: " + text);
+
+            }
+
+        }
+
+
+
+        // --- Render Functions ---
+
+
+
+        function renderListening() {
+
+            const container = document.getElementById('listening-container');
+
+            container.innerHTML = quizData.listening.map((q, index) => `
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition hover:shadow-md">
+
+                    <div class="flex flex-col md:flex-row items-center gap-4">
+
+                        <div class="flex-shrink-0">
+
+                            <span class="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full mb-2 font-bold">문제 ${index + 1}</span>
+
+                            <button onclick="playAudio('${q.audio.replace(/'/g, "\\'")}')" class="flex items-center justify-center w-16 h-16 bg-amber-500 rounded-full text-white hover:bg-amber-600 transition shadow-lg transform hover:scale-105 active:scale-95">
+
+                                <span class="text-2xl">🔊</span>
+
+                            </button>
+
+                            <p class="text-xs text-center mt-2 text-gray-400">클릭해서 듣기</p>
+
+                        </div>
+
+                        <div class="flex-grow w-full">
+
+                            <h3 class="font-bold text-gray-800 mb-4 text-lg">${q.question}</h3>
+
+                            <div class="grid grid-cols-2 gap-4">
+
+                                ${q.options.map((opt, optIdx) => `
+
+                                    <button onclick="handleListeningAnswer(${q.id}, ${opt.val}, this)" class="listening-opt-${q.id} py-4 px-4 rounded-xl border-2 border-gray-200 hover:border-amber-300 hover:bg-amber-50 transition text-gray-700 font-medium text-left flex items-center justify-center gap-2">
+
+                                        ${opt.text}
+
+                                    </button>
+
+                                `).join('')}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `).join('');
+
+        }
+
+
+
+        function handleListeningAnswer(qId, val, btnElement) {
+
+            // Visual selection logic
+
+            const allBtns = document.querySelectorAll(`.listening-opt-${qId}`);
+
+            allBtns.forEach(b => {
+
+                b.classList.remove('bg-amber-500', 'text-white', 'border-amber-500');
+
+                b.classList.add('border-gray-200', 'text-gray-700');
+
+            });
+
+            
+
+            btnElement.classList.remove('border-gray-200', 'text-gray-700', 'hover:bg-amber-50');
+
+            btnElement.classList.add('bg-amber-500', 'text-white', 'border-amber-500');
+
+
+
+            // Store answer
+
+            state.userAnswers.listening[qId] = val;
+
+        }
+
+
+
+        function renderReading() {
+
+            const container = document.getElementById('reading-container');
+
+            container.innerHTML = quizData.reading.map((q, index) => `
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center">
+
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-3 font-bold">문제 ${index + 6}</span>
+
+                    <p class="text-2xl font-bold text-gray-800 mb-6 font-mono">
+
+                        ${q.text.replace('___', '<span class="inline-block w-16 border-b-2 border-dashed border-gray-400 mx-1 text-blue-600" id="read-slot-'+q.id+'">?</span>')}
+
+                    </p>
+
+                    <div class="flex gap-2">
+
+                        ${q.options.map(opt => `
+
+                            <button onclick="handleReadingAnswer(${q.id}, '${opt}')" class="reading-opt-${q.id} px-4 py-2 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition text-gray-600 font-bold">
+
+                                ${opt}
+
+                            </button>
+
+                        `).join('')}
+
+                    </div>
+
+                </div>
+
+            `).join('');
+
+        }
+
+
+
+        function handleReadingAnswer(qId, val) {
+
+            // Update the "blank" visually
+
+            document.getElementById(`read-slot-${qId}`).textContent = val;
+
+            document.getElementById(`read-slot-${qId}`).classList.remove('text-blue-600', 'border-gray-400');
+
+            document.getElementById(`read-slot-${qId}`).classList.add('text-amber-600', 'border-amber-500');
+
+
+
+            // Visual selection of buttons
+
+            const allBtns = document.querySelectorAll(`.reading-opt-${qId}`);
+
+            allBtns.forEach(b => b.classList.remove('bg-blue-500', 'text-white'));
+
+            
+
+            // Note: In a real app we'd identify the specific button clicked, but here just storing state is enough for simplicity
+
+            // We just re-style buttons based on selection isn't strictly necessary if the text updates, but let's be cleaner:
+
+            event.target.classList.add('bg-blue-500', 'text-white');
+
+
+
+            state.userAnswers.reading[qId] = val;
+
+        }
+
+
+
+        function renderWriting() {
+
+            const container = document.getElementById('writing-container');
+
+            container.innerHTML = quizData.writing.map((q, index) => `
+
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+
+                    <div class="flex justify-between items-start mb-4">
+
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-bold">문제 ${index + 11}</span>
+
+                        <span class="text-xs text-gray-400">✍️ ${q.hint}</span>
+
+                    </div>
+
+                    
+
+                    <div class="flex flex-col md:flex-row gap-6 items-center">
+
+                        ${q.img ? `<div class="text-4xl bg-gray-50 p-4 rounded-xl">${q.img}</div>` : ''}
+
+                        
+
+                        <div class="flex-grow w-full">
+
+                            ${q.context ? `<p class="text-sm text-gray-500 mb-2">${q.context}</p>` : ''}
+
+                            <div class="bg-gray-50 p-4 rounded-xl mb-3 text-center md:text-left">
+
+                                <p class="text-xl font-bold text-gray-700">${q.q || "____ ____ ____"}</p>
+
+                            </div>
+
+                            <div class="relative">
+
+                                <input type="text" oninput="handleWritingAnswer(${q.id}, this.value)" 
+
+                                    class="w-full p-3 pl-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 transition font-mono text-lg" 
+
+                                    placeholder="여기에 정답을 쓰세요...">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `).join('');
+
+        }
+
+
+
+        function handleWritingAnswer(qId, val) {
+
+            state.userAnswers.writing[qId] = val;
+
+        }
+
+
+
+        // --- Scoring & Charts ---
+
+
+
+        function finishQuiz() {
+
+            // Check if all writing is done (optional strictness, let's allow submission)
+
+            
+
+            // Calculate Scores
+
+            let scoreL = 0;
+
+            let scoreR = 0;
+
+            let scoreW = 0;
+
+
+
+            // Listening Grading
+
+            quizData.listening.forEach(q => {
+
+                if (state.userAnswers.listening[q.id] === q.correct) scoreL += 10;
+
+            });
+
+
+
+            // Reading Grading
+
+            quizData.reading.forEach(q => {
+
+                if (state.userAnswers.reading[q.id] === q.correct) scoreR += 10;
+
+            });
+
+
+
+            // Writing Grading (Flexible string matching)
+
+            quizData.writing.forEach(q => {
+
+                const userAns = (state.userAnswers.writing[q.id] || "").trim();
+
+                // Simple normalization: remove multiple spaces, punctuation logic could be added
+
+                const normalizedUser = userAns.replace(/\./g, "").toLowerCase();
+
+                const isCorrect = q.correct.some(ans => ans.replace(/\./g, "").toLowerCase() === normalizedUser);
+
+                if (isCorrect) scoreW += 10;
+
+            });
+
+
+
+            state.scores = { listening: scoreL, reading: scoreR, writing: scoreW };
+
+            const totalScore = scoreL + scoreR + scoreW;
+
+
+
+            // Render Report
+
+            document.getElementById('final-score').textContent = `${totalScore}점`;
+
+            
+
+            // Progress bars
+
+            document.getElementById('progress-listening').style.width = `${(scoreL/50)*100}%`;
+
+            document.getElementById('progress-listening-val').textContent = `${scoreL}/50`;
+
+            
+
+            document.getElementById('progress-reading').style.width = `${(scoreR/50)*100}%`;
+
+            document.getElementById('progress-reading-val').textContent = `${scoreR}/50`;
+
+            
+
+            document.getElementById('progress-writing').style.width = `${(scoreW/50)*100}%`;
+
+            document.getElementById('progress-writing-val').textContent = `${scoreW}/50`;
+
+
+
+            // Feedback Message
+
+            const feedbackEl = document.getElementById('feedback-text');
+
+            if (totalScore === 150) {
+
+                feedbackEl.textContent = `우와! ${state.username} 학생, 정말 대단해요! Be동사 마스터가 되셨군요! 완벽합니다! 🎉`;
+
+                document.getElementById('score-message').textContent = "완벽해요! 🏆";
+
+            } else if (totalScore >= 100) {
+
+                feedbackEl.textContent = `참 잘했어요, ${state.username} 학생! 대부분의 문제를 맞췄네요. 틀린 문제만 다시 한번 복습하면 완벽해질 거예요! 👍`;
+
+                document.getElementById('score-message').textContent = "훌륭합니다! 👏";
+
+            } else {
+
+                feedbackEl.textContent = `${state.username} 학생, 수고했어요! 아직 조금 헷갈리는 부분이 있나 봐요. Be동사와 짝꿍들을 다시 한번 천천히 살펴볼까요? 화이팅! 🌱`;
+
+                document.getElementById('score-message').textContent = "힘내세요! 💪";
+
+            }
+
+
+
+            // Chart
+
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+
+            new Chart(ctx, {
+
+                type: 'doughnut',
+
+                data: {
+
+                    labels: ['맞은 점수', '부족한 점수'],
+
+                    datasets: [{
+
+                        data: [totalScore, 150 - totalScore],
+
+                        backgroundColor: ['#F59E0B', '#E5E7EB'], // Amber-500, Gray-200
+
+                        borderWidth: 0
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: { display: false },
+
+                        tooltip: { enabled: false }
+
+                    },
+
+                    cutout: '75%'
+
+                }
+
+            });
+
+
+
+            switchTab('report');
+
+        }
+
+    </script>
+
+</body>
+
+</html>
